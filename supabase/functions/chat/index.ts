@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,41 +16,41 @@ Deno.serve(async (req) => {
     const apiKey = Deno.env.get('GEMINI_API_KEY');
 
     if (!apiKey) {
-      throw new Error('GEMINI_API_KEY is not set');
+      throw new Error('GEMINI_API_KEY is not set in Edge Function secrets');
     }
 
-    const ai = new GoogleGenAI({ apiKey });
+    const genAI = new GoogleGenerativeAI(apiKey);
 
-    // Convert internal message format to Gemini API format
-    const historyContents = history.map((msg: any) => ({
-      role: msg.role,
+    // Determine model
+    let modelName = 'gemini-1.5-flash';
+    if (mode === 'thinking') {
+      // Fallback to flash if thinking model not available or stable
+      modelName = 'gemini-1.5-flash';
+    }
+
+    const model = genAI.getGenerativeModel({
+      model: modelName,
+      systemInstruction: "You are CollegeSeraBot, a helpful assistant for college admission queries.",
+    });
+
+    // Convert history to Gemini format
+    // Gemini expects: { role: "user" | "model", parts: [{ text: "..." }] }
+    const chatHistory = history.map((msg: any) => ({
+      role: msg.role === 'model' ? 'model' : 'user',
       parts: [{ text: msg.text }],
     }));
 
-    let modelName = 'gemini-2.5-flash';
-    const config: any = {
-      systemInstruction: "You are CollegeSeraBot, a helpful assistant for college admission queries.",
-    };
-
-    if (mode === 'search') {
-      modelName = 'gemini-2.5-flash';
-      config.tools = [{ googleSearch: {} }];
-    } else if (mode === 'thinking') {
-      modelName = 'gemini-2.0-flash-thinking-exp-01-21';
-    }
-
-    const chat = ai.chats.create({
-      model: modelName,
-      history: historyContents,
-      config: config,
+    const chat = model.startChat({
+      history: chatHistory,
     });
 
-    const result = await chat.sendMessage({
-      message: newMessage,
-    });
+    const result = await chat.sendMessage(newMessage);
+    const response = await result.response;
+    const text = response.text();
 
-    const text = result.text || "I'm sorry, I couldn't generate a response.";
-    const groundingMetadata = result.candidates?.[0]?.groundingMetadata;
+    // Note: groundingMetadata might be different or require specific config in this SDK
+    // For now, we'll omit it to ensure stability, or check if response.candidates exists
+    const groundingMetadata = response.candidates?.[0]?.groundingMetadata;
 
     return new Response(
       JSON.stringify({ text, groundingMetadata }),
@@ -61,9 +61,9 @@ Deno.serve(async (req) => {
     );
 
   } catch (error: any) {
-    console.error('Error:', error);
+    console.error('Edge Function Error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error.message, details: error.toString() }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,

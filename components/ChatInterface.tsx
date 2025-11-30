@@ -2,15 +2,18 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Message, LoadingState, User, BotMode } from '../types';
 import { generateBotResponse } from '../services/geminiService';
 import { logInteraction } from '../services/dataService';
-import MessageBubbleCaramel from './MessageBubble';
-import Ai04 from './Ai04';
+import MessageBubble from './MessageBubble';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Card } from './ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { Send, Paperclip, Sparkles, ChevronDown } from 'lucide-react';
 
 interface ChatInterfaceProps {
   user: User;
 }
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
-  const [mode, setMode] = useState<BotMode>('search');
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome-1',
@@ -19,45 +22,34 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
       timestamp: new Date(),
     },
   ]);
+  const [input, setInput] = useState('');
   const [status, setStatus] = useState<LoadingState>(LoadingState.IDLE);
-
-  // refs
-  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
-
-  // auto-scroll helper (only if user is near bottom)
-  const shouldAutoScroll = () => {
-    const el = messagesContainerRef.current;
-    if (!el) return true;
-    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
-    return distanceFromBottom < 150; // px threshold
-  };
 
   const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
     messagesEndRef.current?.scrollIntoView({ behavior, block: 'end' });
   };
 
   useEffect(() => {
-    if (shouldAutoScroll()) scrollToBottom('smooth');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    scrollToBottom();
   }, [messages]);
 
-  // send flow used by Ai04
-  const sendPrompt = async (userMessageText: string) => {
-    if (!userMessageText?.trim() || status === LoadingState.LOADING) return;
+  const handleSend = async () => {
+    if (!input.trim() || status === LoadingState.LOADING) return;
 
-    const newUserMessage: Message = {
+    const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      text: userMessageText,
+      text: input.trim(),
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, newUserMessage]);
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
     setStatus(LoadingState.LOADING);
 
     try {
-      const response = await generateBotResponse(messages, userMessageText, mode);
+      const response = await generateBotResponse(messages, userMessage.text, 'search');
 
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -67,13 +59,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
         groundingMetadata: response.groundingMetadata,
       };
 
-      setMessages((prev) => [...prev, botMessage]);
+      setMessages(prev => [...prev, botMessage]);
       setStatus(LoadingState.IDLE);
 
       if (user.id) {
         logInteraction({
           user_id: user.id,
-          message: userMessageText,
+          message: userMessage.text,
           bot_response: response.text,
           detected_colleges: [],
         });
@@ -85,70 +77,94 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
         text: "I encountered an error connecting to the server. Please try again.",
         timestamp: new Date(),
       };
-      setMessages((prev) => [...prev, errorMessage]);
+      setMessages(prev => [...prev, errorMessage]);
       setStatus(LoadingState.ERROR);
     }
   };
 
-  // small inline caramel variables (keeps no global css required)
-  const themeCss = `
-    :root {
-      --caramel-50: #fff9f4;
-      --caramel-100: #fff2e6;
-      --caramel-200: #fde1cc;
-      --caramel-300: #f9ccb3;
-      --caramel-400: #f4b28a;
-      --caramel-500: #e89a61;
-      --caramel-600: #c97a3f;
-      --caramel-700: #8f4f2a;
-      --caramel-800: #5f311d;
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
     }
-  `;
+  };
 
   return (
-    // responsive container:
-    // - full height available (parent must provide height; App now does)
-    // - center horizontally; wider on desktop (max-w-6xl)
-    <div className="mx-auto w-full max-w-6xl h-full flex flex-col" style={{ minHeight: 0 }}>
-      <style>{themeCss}</style>
-
-      {/* top small header area (inside chat) */}
-      <div className="px-4 py-3 border-b" style={{ borderColor: 'rgba(95,49,29,0.06)', background: 'var(--caramel-50)' }}>
-        <div className="flex items-center justify-between">
-          <div className="text-lg font-semibold" style={{ color: 'var(--caramel-800)' }}>CollegeSeraBot</div>
-          <div className="text-xs opacity-70">Ask about fees, courses & cutoffs</div>
-        </div>
-      </div>
-
-      {/* messages area: flex-1 so it expands and is scrollable */}
-      <div
-        ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto p-4"
-        style={{ background: 'linear-gradient(180deg,var(--caramel-50), #fffaf6)' }}
-      >
-        <div className="flex flex-col gap-4">
-          {messages.map((msg) => (
-            <MessageBubbleCaramel key={msg.id} message={msg} />
-          ))}
-
-          {status === LoadingState.LOADING && (
-            <div className="chat chat-start">
-              <div className="chat-image avatar">
-                <div className="w-10 rounded-full" style={{ background: 'var(--caramel-300)' }} />
-              </div>
-              <div className="chat-bubble car-bubble">
-                <div className="skeleton h-4 w-24"></div>
-              </div>
+    <div className="flex flex-col h-full max-w-5xl mx-auto bg-background rounded-xl border shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
+        <div className="flex items-center gap-3">
+          <Avatar className="h-9 w-9 border">
+            <AvatarFallback className="bg-primary text-primary-foreground font-bold">V</AvatarFallback>
+          </Avatar>
+          <div>
+            <div className="font-semibold flex items-center gap-2">
+              CollegeSeraBot
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium">BETA</span>
             </div>
-          )}
-
-          <div ref={messagesEndRef} />
+            <div className="text-xs text-muted-foreground">Ask about fees, courses & cutoffs</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+          <span className="text-xs text-muted-foreground font-medium">Online</span>
         </div>
       </div>
 
-      {/* input/prompt pinned to bottom (Ai04) */}
-      <div className="p-4 border-t" style={{ borderColor: 'rgba(95,49,29,0.06)', background: '#fff' }}>
-        <Ai04 onSubmit={(promptText) => sendPrompt(promptText)} />
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-6 scroll-smooth">
+        {messages.map((msg) => (
+          <MessageBubble key={msg.id} message={msg} />
+        ))}
+
+        {status === LoadingState.LOADING && (
+          <div className="flex gap-3">
+            <Avatar className="h-8 w-8 border mt-1">
+              <AvatarFallback className="bg-primary text-primary-foreground text-xs">V</AvatarFallback>
+            </Avatar>
+            <div className="space-y-2">
+              <Card className="p-4 w-fit bg-muted/50 border-none">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Sparkles className="h-4 w-4 animate-pulse" />
+                  <span>Thinking...</span>
+                </div>
+              </Card>
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input Area */}
+      <div className="p-4 border-t bg-background">
+        <div className="relative flex items-end gap-2 p-2 rounded-xl border bg-muted/30 focus-within:ring-1 focus-within:ring-ring focus-within:border-primary/50 transition-all">
+          <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground shrink-0 rounded-lg">
+            <Paperclip className="h-5 w-5" />
+          </Button>
+
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Ask anything about colleges..."
+            className="flex-1 min-h-[44px] max-h-[200px] w-full bg-transparent border-none focus:ring-0 resize-none py-2.5 text-sm placeholder:text-muted-foreground"
+            style={{ height: 'auto', overflow: 'hidden' }}
+          />
+
+          <Button
+            onClick={handleSend}
+            disabled={!input.trim() || status === LoadingState.LOADING}
+            size="icon"
+            className="h-9 w-9 shrink-0 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm disabled:opacity-50"
+          >
+            <Send className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="mt-2 text-center">
+          <p className="text-[10px] text-muted-foreground">
+            AI can make mistakes. Check important info.
+          </p>
+        </div>
       </div>
     </div>
   );

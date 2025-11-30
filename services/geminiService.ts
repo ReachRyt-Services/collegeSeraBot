@@ -20,8 +20,17 @@ export const generateBotResponse = async (
     });
 
     if (error) {
-      console.error("Edge Function Error:", error);
+      console.error("Edge Function Error Details:", error);
+      // Try to parse the error body if it exists in the error object (Supabase specific)
+      if ('context' in error && (error as any).context?.json) {
+        const body = await (error as any).context.json();
+        console.error("Edge Function Error Body:", JSON.stringify(body, null, 2));
+      }
       throw new Error(error.message || "Failed to fetch response");
+    }
+
+    if (!data) {
+      throw new Error("No data received from Edge Function");
     }
 
     return {

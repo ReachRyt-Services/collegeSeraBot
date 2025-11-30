@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+@theme {
+    --color-primary: #FF6201;
+    --color-secondary: #E57C04;
+    --color-accent: #F3B700;
+    --color-neutral: #431407;
+    --color-base-100: #ffffff;
+    --color-base-200: #fff8f0;
+    --color-base-300: #ffead6;
+}
+
+@layer base {
+    :root {
+        --background: 0 0% 100%;
+        --foreground: 20 14.3% 4.1%;
+
+        --card: 0 0% 100%;
+        --card-foreground: 20 14.3% 4.1%;
+
+        --popover: 0 0% 100%;
+        --popover-foreground: 20 14.3% 4.1%;
+
+        --primary: 23 100% 50.2%;
+        /* #FF6201 */
+        --primary-foreground: 60 9.1% 97.8%;
+
+        --secondary: 32 96.6% 45.7%;
+        /* #E57C04 */
+        --secondary-foreground: 60 9.1% 97.8%;
+
+        --muted: 34 100% 92%;
+        /* #ffead6 */
+        --muted-foreground: 25 5.3% 44.7%;
+
+        --accent: 45 100% 47.6%;
+        /* #F3B700 */
+        --accent-foreground: 24 9.8% 10%;
+
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 60 9.1% 97.8%;
+
+        --border: 20 5.9% 90%;
+        --input: 20 5.9% 90%;
+        --ring: 23 100% 50.2%;
+
+        --radius: 0.75rem;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+    }
+}
+
+:root {
+    /* DaisyUI 4 Variable Overrides (HSL) - Keeping for backward compatibility if needed */
+    --p: 23 100% 50%;
+    /* Primary #FF6201 */
+    --pc: 0 0% 100%;
+    /* Primary Content */
+    --s: 32 97% 46%;
+    /* Secondary #E57C04 */
+    --sc: 0 0% 100%;
+    --a: 45 100% 48%;
+    /* Accent #F3B700 */
+    --ac: 0 0% 100%;
+    --n: 12 80% 17%;
+    /* Neutral #431407 */
+    --nc: 0 0% 100%;
+    --b1: 0 0% 100%;
+    /* Base 100 */
+    --b2: 32 100% 97%;
+    /* Base 200 */
+    --b3: 29 100% 92%;
+    /* Base 300 */
+
+    --rounded-box: 1rem;
+    --rounded-btn: 0.5rem;
+}
+
+/* Custom Scrollbar for Chat */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+.scrollbar-default::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scrollbar-default::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scrollbar-default::-webkit-scrollbar-thumb {
+    background-color: rgba(156, 163, 175, 0.5);
+    border-radius: 20px;
+}

@@ -1,5 +1,5 @@
 {
     "imports": {
-        "@google/genai": "npm:@google/genai@1.30.0"
+        "@google/generative-ai": "https://esm.sh/@google/generative-ai@0.21.0"
     }
 }
