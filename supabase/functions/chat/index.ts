@@ -22,10 +22,10 @@ Deno.serve(async (req) => {
     const genAI = new GoogleGenerativeAI(apiKey);
 
     // Determine model
-    let modelName = 'gemini-1.5-flash';
+    let modelName = 'gemini-1.5-flash-001';
     if (mode === 'thinking') {
       // Fallback to flash if thinking model not available or stable
-      modelName = 'gemini-1.5-flash';
+      modelName = 'gemini-1.5-flash-001';
     }
 
     const model = genAI.getGenerativeModel({
