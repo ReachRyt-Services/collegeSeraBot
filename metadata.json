@@ -1,0 +1,5 @@
+{
+  "name": "Vidyalaya Bot",
+  "description": "A smart chatbot for Indian college information using Gemini 1.5 Flash and DaisyUI.",
+  "requestFramePermissions": []
+}
