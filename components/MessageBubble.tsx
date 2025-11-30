@@ -88,9 +88,9 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
 
   return (
     <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''}`}>
-      <Avatar className="h-8 w-8 border mt-1 shrink-0">
-        <AvatarFallback className={`${isUser ? 'bg-secondary text-secondary-foreground' : 'bg-primary text-primary-foreground'} text-xs font-medium`}>
-          {isUser ? 'U' : 'V'}
+      <Avatar className="h-8 w-8 mt-1 shrink-0">
+        <AvatarFallback>
+          {isUser ? 'YO' : 'CB'}
         </AvatarFallback>
       </Avatar>
 

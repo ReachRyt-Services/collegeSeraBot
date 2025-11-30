@@ -40,46 +40,53 @@ const App: React.FC = () => {
   return (
     // full viewport container
     <div className="flex flex-col min-h-screen bg-base-200">
-      <header className="navbar bg-base-100/90 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-base-200">
-        <div className="navbar-start">
-          <div className="flex items-center gap-2 px-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold shadow-lg shadow-primary/30">
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-14 items-center justify-between px-4 md:px-6 max-w-5xl mx-auto">
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold shadow-sm">
               C
             </div>
-            <a className="text-xl font-bold tracking-tight text-base-content">CollegeSera<span className="text-primary">Bot</span></a>
+            <a className="text-xl font-bold tracking-tight">
+              CollegeSera<span className="text-primary">Bot</span>
+            </a>
           </div>
-        </div>
-        <div className="navbar-end">
-          {user && (
-            <div className="dropdown dropdown-end">
-              <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar placeholder ring-2 ring-base-200 ring-offset-2">
-                <div className="bg-neutral text-neutral-content rounded-full w-10">
-                  <span className="text-lg font-bold">{user.name.charAt(0).toUpperCase()}</span>
-                </div>
-              </div>
-              <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow-xl bg-base-100 rounded-box w-52 border border-base-200">
-                <li className="menu-title px-4 py-2 text-xs opacity-50 uppercase tracking-wider">Account</li>
-                <li className="disabled"><a className="font-medium">{user.name}</a></li>
-                <div className="divider my-1"></div>
-                <li>
+
+          <div className="flex items-center gap-4">
+            {user && (
+              <div className="relative group">
+                <button className="flex items-center gap-2 outline-none">
+                  <div className="flex flex-col items-end hidden sm:flex">
+                    <span className="text-sm font-medium leading-none">{user.name}</span>
+                    <span className="text-xs text-muted-foreground">Student</span>
+                  </div>
+                  <div className="relative h-8 w-8 overflow-hidden rounded-full border bg-muted flex items-center justify-center">
+                    <span className="font-medium text-sm">{user.name.charAt(0).toUpperCase()}</span>
+                  </div>
+                </button>
+
+                {/* Dropdown Menu */}
+                <div className="absolute right-0 top-full mt-2 w-56 rounded-md border bg-popover p-1 text-popover-foreground shadow-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div className="px-2 py-1.5 text-sm font-semibold">My Account</div>
+                  <div className="h-px bg-muted my-1" />
                   <button
                     onClick={() => {
                       localStorage.removeItem('vidyalaya_user');
                       setUser(null);
                       setView('auth');
                     }}
-                    className="text-error hover:bg-error/10"
+                    className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground text-destructive hover:text-destructive"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                      <path fillRule="evenodd" d="M3 4.25A2.25 2.25 0 0 1 5.25 2h5.5A2.25 2.25 0 0 1 13 4.25v2a.75.75 0 0 1-1.5 0v-2a.75.75 0 0 0-.75-.75h-5.5a.75.75 0 0 0-.75.75v11.5c0 .414.336.75.75.75h5.5a.75.75 0 0 0 .75-.75v-2a.75.75 0 0 1 1.5 0v2A2.25 2.25 0 0 1 10.75 18h-5.5A2.25 2.25 0 0 1 3 15.75V4.25Z" clipRule="evenodd" />
-                      <path fillRule="evenodd" d="M19 10a.75.75 0 0 0-.75-.75H8.704l1.048-.943a.75.75 0 1 0-1.004-1.114l-2.5 2.25a.75.75 0 0 0 0 1.114l2.5 2.25a.75.75 0 1 0 1.004-1.114l-1.048-.943h9.546A.75.75 0 0 0 19 10Z" clipRule="evenodd" />
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4">
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                      <polyline points="16 17 21 12 16 7" />
+                      <line x1="21" x2="9" y1="12" y2="12" />
                     </svg>
-                    Logout
+                    Log out
                   </button>
-                </li>
-              </ul>
-            </div>
-          )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 

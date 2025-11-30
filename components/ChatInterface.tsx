@@ -95,7 +95,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
       <div className="flex items-center justify-between px-6 py-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
         <div className="flex items-center gap-3">
           <Avatar className="h-9 w-9 border">
-            <AvatarFallback className="bg-primary text-primary-foreground font-bold">V</AvatarFallback>
+            <AvatarFallback>CB</AvatarFallback>
           </Avatar>
           <div>
             <div className="font-semibold flex items-center gap-2">
@@ -120,7 +120,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
         {status === LoadingState.LOADING && (
           <div className="flex gap-3">
             <Avatar className="h-8 w-8 border mt-1">
-              <AvatarFallback className="bg-primary text-primary-foreground text-xs">V</AvatarFallback>
+              <AvatarFallback>CB</AvatarFallback>
             </Avatar>
             <div className="space-y-2">
               <Card className="p-4 w-fit bg-muted/50 border-none">

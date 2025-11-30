@@ -35,10 +35,16 @@ Deno.serve(async (req) => {
 
     // Convert history to Gemini format
     // Gemini expects: { role: "user" | "model", parts: [{ text: "..." }] }
-    const chatHistory = history.map((msg: any) => ({
+    let chatHistory = history.map((msg: any) => ({
       role: msg.role === 'model' ? 'model' : 'user',
       parts: [{ text: msg.text }],
     }));
+
+    // Sanitize history: Gemini requires the first message to be from the user
+    // We remove any leading model messages (like the welcome message)
+    while (chatHistory.length > 0 && chatHistory[0].role === 'model') {
+      chatHistory.shift();
+    }
 
     const chat = model.startChat({
       history: chatHistory,
