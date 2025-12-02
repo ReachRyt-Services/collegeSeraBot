@@ -8,7 +8,7 @@ function generateUUID() {
     return crypto.randomUUID();
   }
   // Fallback for older environments
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
     var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
     return v.toString(16);
   });
@@ -22,13 +22,25 @@ export const createLead = async (user: User): Promise<User> => {
   }
 
   try {
+    // 1. Try to use the Edge Function (Secure, handles duplicates)
+    const { data, error: funcError } = await supabase.functions.invoke('create-lead', {
+      body: user
+    });
+
+    if (!funcError && data) {
+      return data as User;
+    }
+
+    console.warn("Edge Function 'create-lead' failed or not deployed. Falling back to direct insert.", funcError);
+
+    // 2. Fallback: Direct Client-Side Insert (May create duplicates)
     // Use existing ID (e.g., from Auth) or generate a new one
     const newId = user.id || generateUUID();
 
     // Map frontend User object to DB columns
     const payload = {
       id: newId,
-      name: user.name, 
+      name: user.name,
       phone: user.phone,
       email: user.email || null,
       location: user.location || null,
@@ -47,7 +59,7 @@ export const createLead = async (user: User): Promise<User> => {
       console.error("Supabase Insert Error Details:", JSON.stringify(error, null, 2));
       throw error;
     }
-    
+
     // Return the user object with the ID used
     return { ...user, id: newId };
   } catch (error: any) {
@@ -64,7 +76,7 @@ export const logInteraction = async (log: InteractionLog): Promise<void> => {
   try {
     // Simple keyword matching to detect which colleges the user is interested in
     const interestTags = COLLEGE_DATA
-      .filter(college => 
+      .filter(college =>
         log.message.toLowerCase().includes(college.name.toLowerCase()) ||
         (college.name.includes('IIT') && log.message.toLowerCase().includes('iit')) ||
         (college.name.includes('VIT') && log.message.toLowerCase().includes('vit')) ||
@@ -89,7 +101,7 @@ export const logInteraction = async (log: InteractionLog): Promise<void> => {
       }]);
 
     if (error) {
-       console.error("Supabase Log Error:", JSON.stringify(error, null, 2));
+      console.error("Supabase Log Error:", JSON.stringify(error, null, 2));
     }
   } catch (error) {
     console.error("Error logging interaction:", error);
@@ -100,7 +112,7 @@ export const logInteraction = async (log: InteractionLog): Promise<void> => {
 
 export const fetchLeads = async (): Promise<User[]> => {
   if (!isSupabaseConfigured() || !supabase) return [];
-  
+
   // RLS Policy: This will only return data if the user is Authenticated (Admin)
   const { data, error } = await supabase
     .from('leads')

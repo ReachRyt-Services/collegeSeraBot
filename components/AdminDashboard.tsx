@@ -2,6 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { fetchLeads, fetchInteractions } from '../services/dataService';
 import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
 import { User } from '../types';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from './ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
+import { Badge } from './ui/badge';
+import { cn } from '../lib/utils';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -13,7 +19,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [interactions, setInteractions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   // Auth State
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -47,10 +53,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       setAuthError("Supabase is not configured. Please check your environment variables.");
       return;
     }
-    
+
     setLoading(true);
     setAuthError('');
-    
+
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -70,7 +76,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
   const loadData = async () => {
     if (!session && !supabase) return;
-    
+
     setLoading(true);
     try {
       const [leadsData, interactionsData] = await Promise.all([
@@ -113,203 +119,223 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   // --- Authentication View ---
   if (!session) {
     return (
-      <div className="hero min-h-screen bg-base-200">
-        <div className="hero-content flex-col">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-primary">Vidyalaya Admin</h1>
-            <p className="py-2">Secure Access Only</p>
-          </div>
-          <div className="card w-full max-w-sm shrink-0 bg-base-100 shadow-2xl">
-            <form className="card-body" onSubmit={handleLogin}>
-              <label className="form-control">
-                <div className="label"><span className="label-text font-medium">Email Address</span></div>
-                <input 
-                  type="email" 
-                  placeholder="admin@vidyalaya.com"
-                  className="input input-bordered"
+      <div className="flex items-center justify-center min-h-screen bg-background/50 p-4">
+        <Card className="w-full max-w-sm shadow-2xl">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl text-center text-primary">CollegeSera Admin</CardTitle>
+            <CardDescription className="text-center">
+              Secure Access Only
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Email Address
+                </label>
+                <Input
+                  type="email"
+                  placeholder="admin@collegesera.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                 />
-              </label>
-              <label className="form-control">
-                <div className="label"><span className="label-text font-medium">Password</span></div>
-                <input 
-                  type="password" 
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Password
+                </label>
+                <Input
+                  type="password"
                   placeholder="••••••••"
-                  className="input input-bordered"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
-              </label>
-              
+              </div>
+
               {authError && (
-                <div role="alert" className="alert alert-error text-sm p-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  <span>{authError}</span>
+                <div className="bg-destructive/15 text-destructive text-sm p-3 rounded-md flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" x2="12" y1="8" y2="12" /><line x1="12" x2="12.01" y1="16" y2="16" /></svg>
+                  {authError}
                 </div>
               )}
 
-              <div className="form-control mt-4">
-                <button type="submit" className="btn btn-primary" disabled={loading}>
-                  {loading ? <span className="loading loading-spinner"></span> : 'Sign In'}
-                </button>
-              </div>
-              
-              <div className="divider my-1"></div>
-              
-              <button type="button" className="btn btn-ghost btn-sm" onClick={onLogout}>
-                &larr; Return to App
-              </button>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? 'Signing In...' : 'Sign In'}
+              </Button>
             </form>
-            
+
             {!isSupabaseConfigured() && (
-               <div className="alert alert-warning m-4 text-xs">
-                 <span>System: Supabase keys are missing.</span>
-               </div>
+              <div className="mt-4 bg-yellow-100 text-yellow-800 text-xs p-2 rounded border border-yellow-200">
+                System: Supabase keys are missing.
+              </div>
             )}
-          </div>
-        </div>
+          </CardContent>
+          <CardFooter className="justify-center">
+            <Button variant="ghost" size="sm" onClick={onLogout}>
+              &larr; Return to App
+            </Button>
+          </CardFooter>
+        </Card>
       </div>
     );
   }
 
   // --- Dashboard View ---
   return (
-    <div className="flex flex-col h-screen w-full bg-base-200 p-2 md:p-4 gap-4">
-      <div className="navbar bg-base-100 rounded-box shadow-lg border border-base-300 flex-col md:flex-row gap-2">
-        <div className="navbar-start">
-          <h1 className="text-xl font-bold px-2">Admin Dashboard</h1>
-        </div>
-        <div className="navbar-center">
-           <div className="badge badge-ghost hidden md:inline-flex">
+    <div className="flex flex-col h-screen w-full bg-muted/30 p-2 md:p-6 gap-6">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <h1 className="text-3xl font-bold tracking-tight text-primary">Admin Dashboard</h1>
+          <Badge variant="outline" className="hidden md:inline-flex px-3 py-1">
             {session.user.email}
-          </div>
+          </Badge>
         </div>
-        <div className="navbar-end w-full md:w-auto flex gap-2">
-          <label className="input input-bordered input-sm flex items-center gap-2 flex-grow">
-            <input 
-              type="text" 
-              className="grow"
+
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          <div className="relative flex-grow md:w-64">
+            <svg xmlns="http://www.w3.org/2000/svg" className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <Input
+              type="text"
+              className="pl-9"
               placeholder="Search..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 opacity-70"><path fillRule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clipRule="evenodd" /></svg>
-          </label>
-          <button className="btn btn-sm btn-ghost btn-square" onClick={loadData} disabled={loading}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`}>
+          </div>
+          <Button variant="outline" size="icon" onClick={loadData} disabled={loading}>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
             </svg>
-          </button>
-          <button className="btn btn-sm btn-error" onClick={handleSignOut}>
+          </Button>
+          <Button variant="destructive" size="sm" onClick={handleSignOut}>
             Logout
-          </button>
+          </Button>
         </div>
       </div>
 
-      <div className="flex-1 bg-base-100 rounded-box shadow-lg border border-base-300 overflow-hidden flex flex-col">
-        <div className="p-2 border-b border-base-300">
-          <div role="tablist" className="tabs tabs-boxed w-fit">
-            <a role="tab" className={`tab ${activeTab === 'leads' ? 'tab-active' : ''}`} onClick={() => setActiveTab('leads')}>
-              Leads <div className="badge badge-sm ml-2">{filteredLeads.length}</div>
-            </a>
-            <a role="tab" className={`tab ${activeTab === 'chats' ? 'tab-active' : ''}`} onClick={() => setActiveTab('chats')}>
-              Chats <div className="badge badge-sm ml-2">{filteredInteractions.length}</div>
-            </a>
+      <Card className="flex-1 overflow-hidden flex flex-col shadow-md border-border/50">
+        <div className="p-2 border-b bg-muted/20">
+          <div className="flex gap-2">
+            <Button
+              variant={activeTab === 'leads' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setActiveTab('leads')}
+              className="gap-2"
+            >
+              Leads <Badge variant={activeTab === 'leads' ? 'secondary' : 'default'} className="ml-1">{filteredLeads.length}</Badge>
+            </Button>
+            <Button
+              variant={activeTab === 'chats' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setActiveTab('chats')}
+              className="gap-2"
+            >
+              Chats <Badge variant={activeTab === 'chats' ? 'secondary' : 'default'} className="ml-1">{filteredInteractions.length}</Badge>
+            </Button>
           </div>
         </div>
 
         <div className="flex-1 overflow-auto">
           {loading ? (
-            <div className="p-4 space-y-4">
-              <div className="skeleton h-8 w-full"></div>
-              <div className="skeleton h-32 w-full"></div>
-              <div className="skeleton h-32 w-full"></div>
+            <div className="p-8 space-y-4">
+              <div className="h-8 bg-muted rounded w-full animate-pulse"></div>
+              <div className="h-32 bg-muted rounded w-full animate-pulse"></div>
+              <div className="h-32 bg-muted rounded w-full animate-pulse"></div>
             </div>
           ) : (
-            <div>
+            <>
               {activeTab === 'leads' && (
-                <table className="table table-pin-rows table-xs md:table-sm">
-                  <thead><tr>
-                    <th>Date</th>
-                    <th>Name / Phone</th>
-                    <th>Contact / Location</th>
-                    <th>Education Interest</th>
-                  </tr></thead>
-                  <tbody>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Name / Phone</TableHead>
+                      <TableHead>Contact / Location</TableHead>
+                      <TableHead>Education Interest</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {filteredLeads.length === 0 ? (
-                      <tr><td colSpan={4} className="text-center p-8">
-                        {searchTerm ? 'No leads found.' : 'No leads recorded.'}
-                      </td></tr>
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center h-24 text-muted-foreground">
+                          {searchTerm ? 'No leads found matching your search.' : 'No leads recorded yet.'}
+                        </TableCell>
+                      </TableRow>
                     ) : (
                       filteredLeads.map((lead) => (
-                        <tr key={lead.id} className="hover">
-                          <td>{lead.created_at ? new Date(lead.created_at).toLocaleDateString() : '-'}</td>
-                          <td>
-                            <div className="font-bold">{lead.name}</div>
-                            <div>{lead.phone}</div>
-                          </td>
-                          <td>
+                        <TableRow key={lead.id}>
+                          <TableCell className="font-medium">{lead.created_at ? new Date(lead.created_at).toLocaleDateString() : '-'}</TableCell>
+                          <TableCell>
+                            <div className="font-semibold">{lead.name}</div>
+                            <div className="text-xs text-muted-foreground">{lead.phone}</div>
+                          </TableCell>
+                          <TableCell>
                             <div>{lead.email || '-'}</div>
-                            {lead.location && <div className="badge badge-ghost badge-sm mt-1">{lead.location}</div>}
-                          </td>
-                          <td>
-                            <div className="flex flex-col gap-1">
-                              {lead.program && <span><b>Prog:</b> {lead.program}</span>}
-                              {lead.preferred_college && <span><b>Target:</b> {lead.preferred_college}</span>}
-                              {lead.preferred_course && <span><b>Course:</b> {lead.preferred_course}</span>}
+                            {lead.location && <Badge variant="outline" className="mt-1 font-normal">{lead.location}</Badge>}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col gap-1 text-xs">
+                              {lead.program && <span><span className="font-semibold">Prog:</span> {lead.program}</span>}
+                              {lead.preferred_college && <span><span className="font-semibold">Target:</span> {lead.preferred_college}</span>}
+                              {lead.preferred_course && <span><span className="font-semibold">Course:</span> {lead.preferred_course}</span>}
                             </div>
-                          </td>
-                        </tr>
+                          </TableCell>
+                        </TableRow>
                       ))
                     )}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               )}
 
               {activeTab === 'chats' && (
-                <table className="table table-pin-rows table-xs">
-                  <thead><tr>
-                    <th>User</th>
-                    <th>Message</th>
-                    <th>Bot Response</th>
-                    <th>Tags</th>
-                  </tr></thead>
-                  <tbody>
-                     {filteredInteractions.length === 0 ? (
-                      <tr><td colSpan={4} className="text-center p-8">
-                        {searchTerm ? 'No chat logs found.' : 'No chat logs found.'}
-                      </td></tr>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[200px]">User</TableHead>
+                      <TableHead>Message</TableHead>
+                      <TableHead>Bot Response</TableHead>
+                      <TableHead className="w-[150px]">Tags</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredInteractions.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center h-24 text-muted-foreground">
+                          {searchTerm ? 'No chat logs found matching your search.' : 'No chat logs recorded yet.'}
+                        </TableCell>
+                      </TableRow>
                     ) : (
                       filteredInteractions.map((log) => (
-                        <tr key={log.id} className="hover align-top">
-                          <td>
-                            <div className="font-bold truncate">{log.leads?.name || 'Unknown'}</div>
-                            <div className="text-xs">{new Date(log.created_at).toLocaleString()}</div>
-                          </td>
-                          <td><div className="prose text-xs max-h-24 overflow-y-auto">{log.message}</div></td>
-                          <td><div className="prose text-xs max-h-24 overflow-y-auto">{log.bot_response}</div></td>
-                          <td>
+                        <TableRow key={log.id} className="align-top">
+                          <TableCell>
+                            <div className="font-semibold truncate max-w-[180px]">{log.leads?.name || 'Unknown'}</div>
+                            <div className="text-xs text-muted-foreground">{new Date(log.created_at).toLocaleString()}</div>
+                          </TableCell>
+                          <TableCell><div className="text-sm max-h-24 overflow-y-auto pr-2">{log.message}</div></TableCell>
+                          <TableCell><div className="text-sm text-muted-foreground max-h-24 overflow-y-auto pr-2">{log.bot_response}</div></TableCell>
+                          <TableCell>
                             {log.detected_colleges && log.detected_colleges.length > 0 ? (
                               <div className="flex flex-wrap gap-1">
                                 {log.detected_colleges.map((tag: string, i: number) => (
-                                  <span key={i} className="badge badge-primary badge-outline badge-xs">{tag}</span>
+                                  <Badge key={i} variant="secondary" className="text-[10px] px-1 py-0">{tag}</Badge>
                                 ))}
                               </div>
-                            ) : <span>-</span>}
-                          </td>
-                        </tr>
+                            ) : <span className="text-muted-foreground">-</span>}
+                          </TableCell>
+                        </TableRow>
                       ))
                     )}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               )}
-            </div>
+            </>
           )}
         </div>
-      </div>
+      </Card>
     </div>
   );
 };

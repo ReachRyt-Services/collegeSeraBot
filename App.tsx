@@ -12,6 +12,12 @@ const App: React.FC = () => {
 
   // Check if user is already registered in this session
   useEffect(() => {
+    // Check for admin path
+    if (window.location.pathname === '/admin') {
+      setView('admin');
+      return;
+    }
+
     const savedUser = localStorage.getItem('vidyalaya_user');
     if (savedUser) {
       try {
@@ -30,6 +36,11 @@ const App: React.FC = () => {
   };
 
   const handleAdminLogout = () => {
+    // Clear URL if we were on admin path
+    if (window.location.pathname === '/admin') {
+      window.history.pushState({}, '', '/');
+    }
+
     if (user) {
       setView('chat');
     } else {
@@ -43,9 +54,7 @@ const App: React.FC = () => {
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 items-center justify-between px-4 md:px-6 max-w-5xl mx-auto">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold shadow-sm">
-              C
-            </div>
+            <img src="/logo.png" alt="CollegeSeraBot Logo" className="h-10 w-10 object-contain" />
             <a className="text-xl font-bold tracking-tight">
               CollegeSera<span className="text-primary">Bot</span>
             </a>
@@ -96,7 +105,6 @@ const App: React.FC = () => {
           {view === 'auth' && (
             <RegistrationModal
               onRegister={handleRegister}
-              onAdminClick={() => setView('admin')}
             />
           )}
 
